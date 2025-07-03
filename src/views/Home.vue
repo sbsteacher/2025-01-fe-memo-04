@@ -27,6 +27,15 @@ const search = () => {
   const params = { search_text: model.searchText }
   findAll(params);
 }
+
+const remove = async id => {
+  if(!confirm('삭제하시겠습니까?')) { return; }
+  
+  const data = await httpService.deleteById(id);
+  if(data.resultData === 1) {
+    search();
+  }
+}
 </script>
 
 <template>

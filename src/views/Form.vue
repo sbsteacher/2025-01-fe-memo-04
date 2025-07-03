@@ -1,36 +1,45 @@
 <script setup>
 import httpService from '@/services/HttpService';
 import { reactive, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
 const state = reactive({
-    memo: {
-        id: 0,
-        title: '',
-        content: '',
-        createdAt: ''
-    }
+  memo: {
+    id: 0,
+    title: '',
+    content: '',
+    createdAt: ''
+  }
 });
 
-onMounted( () => {
+onMounted(() => {
   const passData = history.state.data;
   console.log('passData:', passData);
   if(passData) { //넘어온 데이터가 있다면
     state.memo = JSON.parse(passData); // JSON to Object
   }
 });
-
+//수정만 Detail.vue로 가게 해주세요.
 const procSubmit = async () => {
     const jsonBody = {
         title: state.memo.title,
         content: state.memo.content
     };  
-    const data = await httpService.save(jsonBody);
-    if(data.resultData === 1) {
-        // 주소가 "/"으로 라우팅 처리 하고 싶다. 
-        router.push( { path: '/' } );
+
+    let data = null;
+    let path = '/';
+    if(state.memo.id) {
+      path = `/memos/${state.memo.id}`
+      jsonBody.id = state.memo.id;
+      data = await httpService.modify(jsonBody);
+    } else {
+      data = await httpService.save(jsonBody);
+    }
+
+    if(data.resultData === 1) {        
+        router.push( { path } );
     } else {
         alert(data.resultMessage);
     }
@@ -50,7 +59,7 @@ const procSubmit = async () => {
       <label for="content" class="form-label">내용</label>
       <textarea id="content" class="form-control p-3" v-model="state.memo.content"></textarea>
     </div>
-    <button type="submit" class="btn btn-primary w-100 py-3">저장</button>
+    <button type="submit" class="btn btn-primary w-100 py-3">{{ state.memo.id > 0 ? '수정' : '저장' }}</button>
   </form>
 </template>
 
